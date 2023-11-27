@@ -14,22 +14,25 @@
    limitations under the License.
 */
 
-package login
+package utils
 
 import (
+	"fmt"
+	"io"
 	"os"
-	"path/filepath"
-	"testing"
-
-	"gotest.tools/v3/assert"
+	"strconv"
+	"sync"
 )
 
-func TestClearErrorMessageIfNotAlreadyLoggedIn(t *testing.T) {
-	dir, err := os.MkdirTemp("", "test_store")
-	assert.NilError(t, err)
-	t.Cleanup(func() {
-		_ = os.RemoveAll(dir)
+const deprecationMessage = "Docker Compose's integration for ECS and ACI will be retired in November 2023. Learn more: https://docs.docker.com/go/compose-ecs-eol/"
+
+var warnOnce sync.Once
+
+func ShowDeprecationWarning(w io.Writer) {
+	warnOnce.Do(func() {
+		if quiet, _ := strconv.ParseBool(os.Getenv("COMPOSE_CLOUD_EOL_SILENT")); quiet {
+			return
+		}
+		_, _ = fmt.Fprintln(w, deprecationMessage)
 	})
-	_, _, err = getClientSetupDataImpl(filepath.Join(dir, tokenStoreFilename))
-	assert.ErrorContains(t, err, "not logged in to azure, you need to run \"docker login azure\" first")
 }

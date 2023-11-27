@@ -18,7 +18,6 @@ package config
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -78,12 +77,12 @@ func writeFile(path string, content map[string]interface{}) error {
 	if err != nil {
 		return errors.Wrap(err, "unable to marshal config")
 	}
-	err = ioutil.WriteFile(path, d, 0644)
+	err = os.WriteFile(path, d, 0644)
 	return errors.Wrap(err, "unable to write config file")
 }
 
 func loadFile(path string, dest interface{}) error {
-	data, err := ioutil.ReadFile(path)
+	data, err := os.ReadFile(path)
 	if err != nil {
 		if os.IsNotExist(err) {
 			// Not an error if there is no config, we're just using defaults
@@ -101,5 +100,6 @@ func configFilePath(dir string) string {
 
 // File contains the current context from the docker configuration file
 type File struct {
-	CurrentContext string `json:"currentContext,omitempty"`
+	CurrentContext string                       `json:"currentContext,omitempty"`
+	Plugins        map[string]map[string]string `json:"plugins,omitempty"`
 }
